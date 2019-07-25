@@ -22,20 +22,16 @@ AssignmentNotification.prototype.send = function() {
   var firstPersist = this._persistAssignment();
 
   var secondPersist = $.Deferred();
-  this._visitor.analytics.trackAssignment(
-    this._visitor.getId(),
-    this._assignment,
-    function(success) {
-      var promise = this._persistAssignment(success ? 'success' : 'failure');
-      promise.always(function() {
-        if (promise.state() === 'resolved') {
-          secondPersist.resolve();
-        } else {
-          secondPersist.reject();
-        }
-      });
-    }.bind(this)
-  );
+  this._maybeTrack().then(function(success) {
+    var promise = this._persistAssignment(success ? 'success' : 'failure');
+    promise.always(function() {
+      if (promise.state() === 'resolved') {
+        secondPersist.resolve();
+      } else {
+        secondPersist.reject();
+      }
+    });
+  });
 
   return $.when(firstPersist, secondPersist);
 };
@@ -60,6 +56,34 @@ AssignmentNotification.prototype._persistAssignment = function(trackResult) {
       );
     }.bind(this)
   );
+};
+
+AssignmentNotification.prototype._maybeTrack = function() {
+  var trackingDeferred = $.Deferred();
+
+  if (this._shouldTrack()) {
+    this._visitor.analytics.trackAssignment(
+      this._visitor.getId(),
+      this._assignment,
+      function(success) {
+        trackingDeferred.resolve(success);
+      }
+    );
+  } else {
+    trackingDeferred.resolve(true);
+  }
+
+  return trackingDeferred.promise();
+};
+
+AssignmentNotification.prototype._shouldTrack = function() {
+  var split = TestTrackConfig.getSplitRegistry().getSplit(this._assignment.getSplitName());
+
+  if (!split.isFeatureGate()) {
+    return true;
+  }
+
+  return Math.floor(Math.random * TestTrackConfig.getExperienceSamplingRate()) === 0;
 };
 
 export default AssignmentNotification;

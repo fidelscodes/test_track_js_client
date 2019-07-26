@@ -37,7 +37,7 @@ Identifier.prototype.save = function() {
     deferred.resolve(visitor);
   });
 
-  return deferred.promise();
+  return Promise.resolve(deferred.promise());
 };
 
 export default Identifier;

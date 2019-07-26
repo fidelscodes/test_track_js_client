@@ -37,7 +37,7 @@ AssignmentNotification.prototype.send = function() {
     }.bind(this)
   );
 
-  return $.when(firstPersist, secondPersist);
+  return Promise.resolve($.when(firstPersist, secondPersist));
 };
 
 AssignmentNotification.prototype._persistAssignment = function(trackResult) {

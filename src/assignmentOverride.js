@@ -20,7 +20,7 @@ var AssignmentOverride = function(options) {
 };
 
 AssignmentOverride.prototype.persistAssignment = function() {
-  return $.ajax(TestTrackConfig.getUrl() + '/api/v1/assignment_override', {
+  var promise = $.ajax(TestTrackConfig.getUrl() + '/api/v1/assignment_override', {
     method: 'POST',
     dataType: 'json',
     crossDomain: true,
@@ -43,6 +43,8 @@ AssignmentOverride.prototype.persistAssignment = function() {
       );
     }.bind(this)
   );
+
+  return Promise.resolve(promise);
 };
 
 export default AssignmentOverride;

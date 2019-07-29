@@ -26,7 +26,7 @@ describe('AssignmentNotification', () => {
       assignments: []
     });
 
-    testContext.analyticsTrackStub = jest.fn();
+    testContext.analyticsTrackStub = jest.fn().mockResolvedValue(true);
     testContext.visitor.setAnalytics({
       trackAssignment: testContext.analyticsTrackStub
     });
@@ -68,72 +68,67 @@ describe('AssignmentNotification', () => {
       expect(testContext.analyticsTrackStub).toHaveBeenCalledTimes(1);
       expect(testContext.analyticsTrackStub).toHaveBeenCalledWith(
         'visitorId',
-        testContext.assignment,
-        expect.any(Function)
+        testContext.assignment
       );
     });
 
     it('notifies the test track server with an analytics success', () => {
-      testContext.analyticsTrackStub.mockImplementation((visitor_id, assignment, callback) => {
-        callback(true);
-      });
+      testContext.analyticsTrackStub.mockResolvedValue(true);
 
-      testContext.notification.send();
-
-      expect($.ajax).toHaveBeenCalledTimes(2);
-      expect($.ajax).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
-        method: 'POST',
-        dataType: 'json',
-        crossDomain: true,
-        data: {
-          visitor_id: 'visitorId',
-          split_name: 'jabba',
-          context: 'spec',
-          mixpanel_result: undefined
-        }
-      });
-      expect($.ajax).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
-        method: 'POST',
-        dataType: 'json',
-        crossDomain: true,
-        data: {
-          visitor_id: 'visitorId',
-          split_name: 'jabba',
-          context: 'spec',
-          mixpanel_result: 'success'
-        }
+      return testContext.notification.send().then(() => {
+        expect($.ajax).toHaveBeenCalledTimes(2);
+        expect($.ajax).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'POST',
+          dataType: 'json',
+          crossDomain: true,
+          data: {
+            visitor_id: 'visitorId',
+            split_name: 'jabba',
+            context: 'spec',
+            mixpanel_result: undefined
+          }
+        });
+        expect($.ajax).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'POST',
+          dataType: 'json',
+          crossDomain: true,
+          data: {
+            visitor_id: 'visitorId',
+            split_name: 'jabba',
+            context: 'spec',
+            mixpanel_result: 'success'
+          }
+        });
       });
     });
 
     it('notifies the test track server with an analytics failure', () => {
-      testContext.analyticsTrackStub.mockImplementation((visitor_id, assignment, callback) => {
-        callback(false);
-      });
+      testContext.analyticsTrackStub.mockResolvedValue(false);
 
-      testContext.notification.send();
-
-      expect($.ajax).toHaveBeenCalledTimes(2);
-      expect($.ajax).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
-        method: 'POST',
-        dataType: 'json',
-        crossDomain: true,
-        data: {
-          visitor_id: 'visitorId',
-          split_name: 'jabba',
-          context: 'spec',
-          mixpanel_result: undefined
-        }
-      });
-      expect($.ajax).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
-        method: 'POST',
-        dataType: 'json',
-        crossDomain: true,
-        data: {
-          visitor_id: 'visitorId',
-          split_name: 'jabba',
-          context: 'spec',
-          mixpanel_result: 'failure'
-        }
+      return testContext.notification.send().then(() => {
+        expect($.ajax).toHaveBeenCalledTimes(2);
+        expect($.ajax).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'POST',
+          dataType: 'json',
+          crossDomain: true,
+          data: {
+            visitor_id: 'visitorId',
+            split_name: 'jabba',
+            context: 'spec',
+            mixpanel_result: undefined
+          }
+        });
+        expect($.ajax).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'POST',
+          dataType: 'json',
+          crossDomain: true,
+          data: {
+            visitor_id: 'visitorId',
+            split_name: 'jabba',
+            context: 'spec',
+            mixpanel_result: 'failure'
+          }
+        });
       });
     });
 
@@ -146,12 +141,13 @@ describe('AssignmentNotification', () => {
         ]);
       });
 
-      testContext.notification.send();
-
-      expect(testContext.visitor.logError).toHaveBeenCalledTimes(1);
-      expect(testContext.visitor.logError).toHaveBeenCalledWith(
-        'test_track persistAssignment error: [object Object], 500, Internal Server Error, textStatus, errorThrown'
-      );
+      expect.assertions(2);
+      return testContext.notification.send().catch(() => {
+        expect(testContext.visitor.logError).toHaveBeenCalledTimes(2);
+        expect(testContext.visitor.logError).toHaveBeenCalledWith(
+          'test_track persistAssignment error: [object Object], 500, Internal Server Error, textStatus, errorThrown'
+        );
+      });
     });
   });
 });

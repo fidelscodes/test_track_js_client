@@ -291,22 +291,24 @@ describe('Session', () => {
               };
             });
 
-            return testContext.publicApi._crx.persistAssignment('split', 'variant', 'the_username', 'the_password').then(
-              function() {
-                expect(AssignmentOverride).toHaveBeenCalledTimes(1);
-                expect(AssignmentOverride).toHaveBeenCalledWith({
-                  visitor: testContext.visitor,
-                  username: 'the_username',
-                  password: 'the_password',
-                  assignment: new Assignment({
-                    splitName: 'split',
-                    variant: 'variant',
-                    context: 'chrome_extension',
-                    isUnsynced: true
-                  })
-                });
-              }.bind(this)
-            );
+            return testContext.publicApi._crx
+              .persistAssignment('split', 'variant', 'the_username', 'the_password')
+              .then(
+                function() {
+                  expect(AssignmentOverride).toHaveBeenCalledTimes(1);
+                  expect(AssignmentOverride).toHaveBeenCalledWith({
+                    visitor: testContext.visitor,
+                    username: 'the_username',
+                    password: 'the_password',
+                    assignment: new Assignment({
+                      splitName: 'split',
+                      variant: 'variant',
+                      context: 'chrome_extension',
+                      isUnsynced: true
+                    })
+                  });
+                }.bind(this)
+              );
           });
         });
 

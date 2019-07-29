@@ -66,10 +66,7 @@ describe('AssignmentNotification', () => {
       testContext.notification.send();
 
       expect(testContext.analyticsTrackStub).toHaveBeenCalledTimes(1);
-      expect(testContext.analyticsTrackStub).toHaveBeenCalledWith(
-        'visitorId',
-        testContext.assignment
-      );
+      expect(testContext.analyticsTrackStub).toHaveBeenCalledWith('visitorId', testContext.assignment);
     });
 
     it('notifies the test track server with an analytics success', () => {

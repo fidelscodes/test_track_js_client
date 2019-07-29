@@ -21,9 +21,11 @@ AssignmentNotification.prototype.send = function() {
 
   var first = this._persistAssignment();
 
-  var second = this._visitor.analytics.trackAssignment(this._visitor.getId(), this._assignment).then(function(success) {
-    return this._persistAssignment(success ? 'success' : 'failure');
-  }.bind(this));
+  var second = this._visitor.analytics.trackAssignment(this._visitor.getId(), this._assignment).then(
+    function(success) {
+      return this._persistAssignment(success ? 'success' : 'failure');
+    }.bind(this)
+  );
 
   return Promise.all([first, second]);
 };

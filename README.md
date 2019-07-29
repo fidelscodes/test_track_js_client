@@ -24,16 +24,16 @@ yarn add test_track_js_client
 
 You can find the latest version of the test track JS client [here](https://github.com/Betterment/test_track_js_client/releases).
 
-The test track JS client currently has the following dependencies: [`blueimp-md5`](https://github.com/blueimp/JavaScript-MD5), [`node-uuid`](https://www.npmjs.com/package/node-uuid), [`jquery`](https://jquery.com/) and [`jquery.cookie`](https://github.com/carhartl/jquery-cookie).
+The test track JS client currently has the following dependencies: [`blueimp-md5`](https://github.com/blueimp/JavaScript-MD5), [`uuid`](https://github.com/kelektiv/node-uuid), and [`js-cookie`](https://github.com/js-cookie/js-cookie).
 
 The client is distributed with two artifacts:
 
 - `testTrack.js` is an ES6 module with no bundled dependencies.
-- `testTrack.bundle.js` is a UMD-style module, bundled with `blueimp-md5`, `node-uuid`, and `jquery.cookie`. You must provide `jquery` separately.
+- `testTrack.bundle.js` is a UMD-style module, bundled with `blueimp-md5`, `uuid`, and `js-cookie`.
 
 If you're using a fancy build pipeline ([grunt](https://gruntjs.com/), [gulp](https://gulpjs.com/), [webpack](https://webpack.js.org/)), then you are all set. If not, you have a few other [options](#alternative-setup) for loading the client into your page.
 
-Note: test track JS client makes use of `bind`, so you may need a [polyfill](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind#Polyfill) to support older browsers.
+Note: test track JS client makes use of [`bind`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind#Polyfill), [`Promises`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) and [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) so you may need a polyfill to support older browsers.
 
 ## Configuration
 
@@ -164,10 +164,9 @@ TestTrack.initialize({
 
 ### Simple HTML setup
 
-You can load the bundled and minified version of the client that includes all of the dependencies for you (except jQuery), like this:
+You can load the bundled and minified version of the client that includes all of the dependencies for you, like this:
 
 ```html
-<script type="text/javascript" src="path/to/deps/jquery/dist/jquery.js"></script>
 <script type="text/javascript" src="path/to/deps/test_track_js_client/dist/testTrack.bundle.js"></script>
 ```
 
@@ -178,7 +177,7 @@ You must provide aliases for the test track JS client's dependencies in your Req
 ```js
 require.config({
   paths: {
-    jquery: 'path/to/deps/jquery/dist/jquery.js'
+    'js-cookie': 'path/to/deps/js-cookie/src/js.cookie.js'
   }
 });
 ```

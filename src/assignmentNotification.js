@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import TestTrackConfig from './testTrackConfig';
 
 var AssignmentNotification = function(options) {
@@ -31,27 +30,29 @@ AssignmentNotification.prototype.send = function() {
 };
 
 AssignmentNotification.prototype._persistAssignment = function(trackResult) {
-  var promise = $.ajax(TestTrackConfig.getUrl() + '/api/v1/assignment_event', {
-    method: 'POST',
-    dataType: 'json',
-    crossDomain: true,
-    data: {
+  return fetch(TestTrackConfig.getUrl() + '/api/v1/assignment_event', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    mode: 'cors',
+    body: JSON.stringify({
       visitor_id: this._visitor.getId(),
       split_name: this._assignment.getSplitName(),
       context: this._assignment.getContext(),
       mixpanel_result: trackResult
-    }
-  }).fail(
-    function(jqXHR, textStatus, errorThrown) {
-      var status = jqXHR && jqXHR.status,
-        responseText = jqXHR && jqXHR.responseText;
-      this._visitor.logError(
-        'test_track persistAssignment error: ' + [jqXHR, status, responseText, textStatus, errorThrown].join(', ')
-      );
-    }.bind(this)
-  );
-
-  return Promise.resolve(promise);
+    })
+  })
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Unexpected status: ' + [response.status, response.body]);
+      }
+    })
+    .catch(
+      function(error) {
+        this._visitor.logError('test_track persistAssignment error: ' + error);
+      }.bind(this)
+    );
 };
 
 export default AssignmentNotification;

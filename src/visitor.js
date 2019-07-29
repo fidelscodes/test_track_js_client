@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import ABConfiguration from './abConfiguration';
 import Assignment from './assignment';
 import AssignmentNotification from './assignmentNotification';
@@ -40,17 +39,28 @@ Visitor.loadVisitor = function(visitorId) {
           })
         );
       } else {
-        $.ajax(TestTrackConfig.getUrl() + '/api/v1/visitors/' + visitorId, { method: 'GET', timeout: 5000 })
-          .done(function(attrs) {
+        // TODO timeouts 5000
+        fetch(TestTrackConfig.getUrl() + '/api/v1/visitors/' + visitorId, {
+          method: 'get',
+          mode: 'cors'
+        })
+          .then(function(response) {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error('Unexpected status: ' + [response.status, response.body]);
+            }
+          })
+          .then(function(json) {
             resolve(
               new Visitor({
-                id: attrs['id'],
-                assignments: Assignment.fromJsonArray(attrs['assignments']),
+                id: json.id,
+                assignments: Assignment.fromJsonArray(json.assignments),
                 ttOffline: false
               })
             );
           })
-          .fail(function() {
+          .catch(function() {
             resolve(
               new Visitor({
                 id: visitorId,

@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import Assignment from './assignment';
 import TestTrackConfig from './testTrackConfig';
 import Visitor from './visitor';
@@ -18,24 +17,32 @@ var Identifier = function(options) {
 };
 
 Identifier.prototype.save = function() {
-  var promise = $.ajax(TestTrackConfig.getUrl() + '/api/v1/identifier', {
-    method: 'POST',
-    dataType: 'json',
-    crossDomain: true,
-    data: {
+  return fetch(TestTrackConfig.getUrl() + '/api/v1/identifier', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    mode: 'cors',
+    body: JSON.stringify({
       identifier_type: this.identifierType,
       value: this.value,
       visitor_id: this.visitorId
-    }
-  }).then(function(identifierJson) {
-    var visitor = new Visitor({
-      id: identifierJson.visitor.id,
-      assignments: Assignment.fromJsonArray(identifierJson.visitor.assignments)
+    })
+  })
+    .then(function(response) {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('Unexpected status: ' + [response.status, response.body]);
+      }
+    })
+    .then(function(json) {
+      var visitor = new Visitor({
+        id: json.visitor.id,
+        assignments: Assignment.fromJsonArray(json.visitor.assignments)
+      });
+      return visitor;
     });
-    return visitor;
-  });
-
-  return Promise.resolve(promise);
 };
 
 export default Identifier;

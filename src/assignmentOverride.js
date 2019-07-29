@@ -1,4 +1,3 @@
-import $ from 'jquery';
 import TestTrackConfig from './testTrackConfig';
 
 var AssignmentOverride = function(options) {
@@ -20,31 +19,31 @@ var AssignmentOverride = function(options) {
 };
 
 AssignmentOverride.prototype.persistAssignment = function() {
-  var promise = $.ajax(TestTrackConfig.getUrl() + '/api/v1/assignment_override', {
-    method: 'POST',
-    dataType: 'json',
-    crossDomain: true,
+  return fetch(TestTrackConfig.getUrl() + '/api/v1/assignment_override', {
+    method: 'post',
     headers: {
+      'Content-Type': 'application/json',
       Authorization: 'Basic ' + btoa(this._username + ':' + this._password)
     },
-    data: {
+    mode: 'cors',
+    body: JSON.stringify({
       visitor_id: this._visitor.getId(),
       split_name: this._assignment.getSplitName(),
       variant: this._assignment.getVariant(),
       context: this._assignment.getContext(),
       mixpanel_result: 'success' // we don't want to track overrides
-    }
-  }).fail(
-    function(jqXHR, textStatus, errorThrown) {
-      var status = jqXHR && jqXHR.status,
-        responseText = jqXHR && jqXHR.responseText;
-      this._visitor.logError(
-        'test_track persistAssignment error: ' + [jqXHR, status, responseText, textStatus, errorThrown].join(', ')
-      );
-    }.bind(this)
-  );
-
-  return Promise.resolve(promise);
+    })
+  })
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Unexpected status: ' + [response.status, response.body]);
+      }
+    })
+    .catch(
+      function(error) {
+        this._visitor.logError('test_track persistAssignment error: ' + error);
+      }.bind(this)
+    );
 };
 
 export default AssignmentOverride;

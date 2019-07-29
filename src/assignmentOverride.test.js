@@ -2,7 +2,6 @@ import Assignment from './assignment';
 import AssignmentOverride from './assignmentOverride';
 import TestTrackConfig from './testTrackConfig'; // eslint-disable-line no-unused-vars
 import Visitor from './visitor';
-import $ from 'jquery';
 
 jest.mock('./testTrackConfig', () => {
   return {
@@ -19,7 +18,7 @@ describe('AssignmentOverride', () => {
   let testContext;
   beforeEach(() => {
     testContext = {};
-    $.ajax = jest.fn().mockImplementation(() => $.Deferred().resolve());
+    global.fetch = jest.fn().mockResolvedValue();
 
     testContext.visitor = new Visitor({
       id: 'visitorId',
@@ -76,39 +75,40 @@ describe('AssignmentOverride', () => {
     it('creates an assignment on the test track server', () => {
       testContext.override.persistAssignment();
 
-      expect($.ajax).toHaveBeenCalledTimes(1);
-      expect($.ajax).toHaveBeenCalledWith('http://testtrack.dev/api/v1/assignment_override', {
-        method: 'POST',
-        dataType: 'json',
-        crossDomain: true,
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/assignment_override', {
+        method: 'post',
+        mode: 'cors',
         headers: {
-          Authorization: 'Basic dGhlX3VzZXJuYW1lOnRoZV9wYXNzd29yZA==' // Base64 of 'the_username:the_password'
+          "Content-Type": "application/json",
+          Authorization: "Basic dGhlX3VzZXJuYW1lOnRoZV9wYXNzd29yZA==",
         },
-        data: {
-          visitor_id: 'visitorId',
-          split_name: 'jabba',
-          variant: 'cgi',
-          context: 'spec',
-          mixpanel_result: 'success'
-        }
+        body: '{"visitor_id":"visitorId","split_name":"jabba","variant":"cgi","context":"spec","mixpanel_result":"success"}'
       });
     });
 
     it('logs an error if the request fails', () => {
-      $.ajax = jest.fn().mockImplementation(function() {
-        return $.Deferred().rejectWith(null, [
-          { status: 500, responseText: 'Internal Server Error' },
-          'textStatus',
-          'errorThrown'
-        ]);
+      global.fetch = jest.fn().mockRejectedValue(new Error("something went wrong"));
+
+      expect.assertions(2);
+      return testContext.override.persistAssignment().then(() => {
+        expect(testContext.visitor.logError).toHaveBeenCalledTimes(1);
+        expect(testContext.visitor.logError).toHaveBeenCalledWith(
+          'test_track persistAssignment error: Error: something went wrong'
+        );
       });
+    });
 
-      testContext.override.persistAssignment();
+    it('logs an error if the request returns a non-200', () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, body: 'body' });
 
-      expect(testContext.visitor.logError).toHaveBeenCalledTimes(1);
-      expect(testContext.visitor.logError).toHaveBeenCalledWith(
-        'test_track persistAssignment error: [object Object], 500, Internal Server Error, textStatus, errorThrown'
-      );
+      expect.assertions(2);
+      return testContext.override.persistAssignment().then(() => {
+        expect(testContext.visitor.logError).toHaveBeenCalledTimes(1);
+        expect(testContext.visitor.logError).toHaveBeenCalledWith(
+          'test_track persistAssignment error: Error: Unexpected status: 500, body'
+        );
+      });
     });
   });
 });

@@ -2,7 +2,6 @@ import Assignment from './assignment';
 import AssignmentNotification from './assignmentNotification';
 import TestTrackConfig from './testTrackConfig'; // eslint-disable-line no-unused-vars
 import Visitor from './visitor';
-import $ from 'jquery';
 
 jest.mock('./testTrackConfig', () => {
   return {
@@ -19,7 +18,7 @@ describe('AssignmentNotification', () => {
   let testContext;
   beforeEach(() => {
     testContext = {};
-    $.ajax = jest.fn().mockImplementation(() => $.Deferred().resolve());
+    global.fetch = jest.fn().mockResolvedValue();
 
     testContext.visitor = new Visitor({
       id: 'visitorId',
@@ -73,28 +72,22 @@ describe('AssignmentNotification', () => {
       testContext.analyticsTrackStub.mockResolvedValue(true);
 
       return testContext.notification.send().then(() => {
-        expect($.ajax).toHaveBeenCalledTimes(2);
-        expect($.ajax).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
-          method: 'POST',
-          dataType: 'json',
-          crossDomain: true,
-          data: {
-            visitor_id: 'visitorId',
-            split_name: 'jabba',
-            context: 'spec',
-            mixpanel_result: undefined
-          }
+        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'post',
+          mode: 'cors',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec"}'
         });
-        expect($.ajax).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
-          method: 'POST',
-          dataType: 'json',
-          crossDomain: true,
-          data: {
-            visitor_id: 'visitorId',
-            split_name: 'jabba',
-            context: 'spec',
-            mixpanel_result: 'success'
-          }
+        expect(global.fetch).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'post',
+          mode: 'cors',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec","mixpanel_result":"success"}'
         });
       });
     });
@@ -103,46 +96,46 @@ describe('AssignmentNotification', () => {
       testContext.analyticsTrackStub.mockResolvedValue(false);
 
       return testContext.notification.send().then(() => {
-        expect($.ajax).toHaveBeenCalledTimes(2);
-        expect($.ajax).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
-          method: 'POST',
-          dataType: 'json',
-          crossDomain: true,
-          data: {
-            visitor_id: 'visitorId',
-            split_name: 'jabba',
-            context: 'spec',
-            mixpanel_result: undefined
-          }
+        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(global.fetch).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'post',
+          mode: 'cors',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec"}'
         });
-        expect($.ajax).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
-          method: 'POST',
-          dataType: 'json',
-          crossDomain: true,
-          data: {
-            visitor_id: 'visitorId',
-            split_name: 'jabba',
-            context: 'spec',
-            mixpanel_result: 'failure'
-          }
+        expect(global.fetch).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
+          method: 'post',
+          mode: 'cors',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec","mixpanel_result":"failure"}'
         });
       });
     });
 
     it('logs an error if the request fails', () => {
-      $.ajax = jest.fn().mockImplementation(function() {
-        return $.Deferred().rejectWith(null, [
-          { status: 500, responseText: 'Internal Server Error' },
-          'textStatus',
-          'errorThrown'
-        ]);
-      });
+      global.fetch = jest.fn().mockRejectedValue(new Error("something went wrong"));
 
       expect.assertions(2);
-      return testContext.notification.send().catch(() => {
+      return testContext.notification.send().then(() => {
         expect(testContext.visitor.logError).toHaveBeenCalledTimes(2);
         expect(testContext.visitor.logError).toHaveBeenCalledWith(
-          'test_track persistAssignment error: [object Object], 500, Internal Server Error, textStatus, errorThrown'
+          'test_track persistAssignment error: Error: something went wrong'
+        );
+      });
+    });
+
+    it('logs an error if the request returns a non-200', () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, body: 'body' });
+
+      expect.assertions(2);
+      return testContext.notification.send().then(() => {
+        expect(testContext.visitor.logError).toHaveBeenCalledTimes(2);
+        expect(testContext.visitor.logError).toHaveBeenCalledWith(
+          'test_track persistAssignment error: Error: Unexpected status: 500, body'
         );
       });
     });

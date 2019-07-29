@@ -2,7 +2,6 @@ import Assignment from './assignment';
 import Identifier from './identifier';
 import TestTrackConfig from './testTrackConfig'; // eslint-disable-line no-unused-vars
 import Visitor from './visitor'; // eslint-disable-line no-unused-vars
-import $ from 'jquery';
 
 jest.mock('./testTrackConfig', () => {
   return {
@@ -21,29 +20,28 @@ describe('Identifier', () => {
   let testContext;
   beforeEach(() => {
     testContext = {};
-    $.ajax = jest.fn().mockImplementation(() =>
-      $.Deferred().resolveWith(null, [
-        {
-          visitor: {
-            id: 'actual_visitor_id',
-            assignments: [
-              {
-                split_name: 'jabba',
-                variant: 'puppet',
-                context: 'mos_eisley',
-                unsynced: true
-              },
-              {
-                split_name: 'wine',
-                variant: 'red',
-                context: 'napa',
-                unsynced: false
-              }
-            ]
-          }
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockReturnValue({
+        visitor: {
+          id: 'actual_visitor_id',
+          assignments: [
+            {
+              split_name: 'jabba',
+              variant: 'puppet',
+              context: 'mos_eisley',
+              unsynced: true
+            },
+            {
+              split_name: 'wine',
+              variant: 'red',
+              context: 'napa',
+              unsynced: false
+            }
+          ]
         }
-      ])
-    );
+      })
+    });
 
     identifierOptions = {
       visitorId: 'transient_visitor_id',
@@ -78,16 +76,13 @@ describe('Identifier', () => {
   describe('#save()', () => {
     it('hits the test track server with the correct parameters', done => {
       testContext.identifier.save().then(function() {
-        expect($.ajax).toHaveBeenCalledTimes(1);
-        expect($.ajax).toHaveBeenCalledWith('http://testtrack.dev/api/v1/identifier', {
-          method: 'POST',
-          dataType: 'json',
-          crossDomain: true,
-          data: {
-            identifier_type: 'myappdb_user_id',
-            value: 444,
-            visitor_id: 'transient_visitor_id'
-          }
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/identifier', {
+          method: 'post',
+          mode: 'cors',
+          headers: {
+            "Content-Type": "application/json"          },
+          body: '{"identifier_type":"myappdb_user_id","value":444,"visitor_id":"transient_visitor_id"}'
         });
 
         done();

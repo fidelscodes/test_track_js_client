@@ -4,7 +4,6 @@ import Identifier from './identifier';
 import TestTrackConfig from './testTrackConfig';
 import VariantCalculator from './variantCalculator';
 import Visitor from './visitor';
-import $ from 'jquery';
 import uuid from 'uuid/v4';
 import { mockSplitRegistry } from './test-utils';
 
@@ -87,20 +86,19 @@ describe('Visitor', () => {
 
   describe('.loadVisitor()', () => {
     beforeEach(() => {
-      $.ajax = jest.fn().mockImplementation(() =>
-        $.Deferred()
-          .resolve({
-            id: 'server_visitor_id',
-            assignments: [
-              {
-                split_name: 'jabba',
-                variant: 'puppet',
-                unsynced: false
-              }
-            ]
-          })
-          .promise()
-      );
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockReturnValue({
+          id: 'server_visitor_id',
+          assignments: [
+            {
+              split_name: 'jabba',
+              variant: 'puppet',
+              unsynced: false
+            }
+          ]
+        })
+      });
     });
 
     it('it does not hit the server when not passed a visitorId', done => {
@@ -108,7 +106,7 @@ describe('Visitor', () => {
 
       Visitor.loadVisitor(undefined).then(
         function(visitor) {
-          expect($.ajax).not.toHaveBeenCalled();
+          expect(global.fetch).not.toHaveBeenCalled();
 
           expect(visitor.getId()).toEqual('generated_uuid');
           expect(visitor.getAssignmentRegistry()).toEqual({});
@@ -135,7 +133,7 @@ describe('Visitor', () => {
 
       Visitor.loadVisitor('baked_visitor_id').then(
         function(visitor) {
-          expect($.ajax).not.toHaveBeenCalled();
+          expect(global.fetch).not.toHaveBeenCalled();
 
           expect(visitor.getId()).toEqual('baked_visitor_id');
           expect(visitor.getAssignmentRegistry()).toEqual({ jabba: jabbaAssignment, wine: wineAssignment });
@@ -147,27 +145,26 @@ describe('Visitor', () => {
     });
 
     it('it loads a visitor from the server for an existing visitor if there are no baked assignments', done => {
-      $.ajax = jest.fn().mockImplementation(() =>
-        $.Deferred()
-          .resolve({
-            id: 'puppeteer_visitor_id',
-            assignments: [
-              {
-                split_name: 'jabba',
-                variant: 'puppet',
-                context: 'mos_eisley',
-                unsynced: false
-              }
-            ]
-          })
-          .promise()
-      );
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockReturnValue({
+          id: 'puppeteer_visitor_id',
+          assignments: [
+            {
+              split_name: 'jabba',
+              variant: 'puppet',
+              context: 'mos_eisley',
+              unsynced: false
+            }
+          ]
+        })
+      });
 
       Visitor.loadVisitor('puppeteer_visitor_id').then(
         function(visitor) {
-          expect($.ajax).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/puppeteer_visitor_id', {
-            method: 'GET',
-            timeout: 5000
+          expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/puppeteer_visitor_id', {
+            method: 'get',
+            mode: 'cors'
           });
 
           var jabbaAssignment = new Assignment({
@@ -187,17 +184,13 @@ describe('Visitor', () => {
     });
 
     it('it builds a visitor in offline mode if the request fails', done => {
-      $.ajax = jest.fn().mockImplementation(() =>
-        $.Deferred()
-          .reject()
-          .promise()
-      );
+      global.fetch = jest.fn().mockRejectedValue();
 
       Visitor.loadVisitor('failed_visitor_id').then(
         function(visitor) {
-          expect($.ajax).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/failed_visitor_id', {
-            method: 'GET',
-            timeout: 5000
+          expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/failed_visitor_id', {
+            method: 'get',
+            mode: 'cors'
           });
 
           expect(visitor.getId()).toEqual('failed_visitor_id');
@@ -610,17 +603,11 @@ describe('Visitor', () => {
       testContext.jabbaCGIAssignment = new Assignment({ splitName: 'jabba', variant: 'cgi', isUnsynced: false });
       testContext.blueButtonAssignment = new Assignment({ splitName: 'blue_button', variant: true, isUnsynced: true });
 
-      mockSave.mockImplementation(() => {
-        testContext.actualVisitor = new Visitor({
+      mockSave.mockResolvedValue(new Visitor({
           id: 'actual_visitor_id',
           assignments: [testContext.jabbaCGIAssignment, testContext.blueButtonAssignment]
-        });
-
-        return $.Deferred()
-          .resolve(testContext.actualVisitor)
-          .promise();
+        }));
       });
-    });
 
     it('saves an identifier', () => {
       testContext.visitor.linkIdentifier('myappdb_user_id', 444);

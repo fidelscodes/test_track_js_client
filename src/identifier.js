@@ -33,8 +33,8 @@ Identifier.prototype.save = function() {
       if (response.ok) {
         return response.json();
       } else {
-        throw new Error('Unexpected status: ' + [response.status, response.body]);
-      }
+
+        throw new Error('Unexpected status: ' + [response.status, response.body].join(', '));      }
     })
     .then(function(json) {
       var visitor = new Visitor({

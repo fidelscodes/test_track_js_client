@@ -36,7 +36,7 @@ AssignmentOverride.prototype.persistAssignment = function() {
   })
     .then(function(response) {
       if (!response.ok) {
-        throw new Error('Unexpected status: ' + [response.status, response.body]);
+        throw new Error('Unexpected status: ' + [response.status, response.body].join(', '));
       }
     })
     .catch(

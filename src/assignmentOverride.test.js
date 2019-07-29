@@ -18,7 +18,7 @@ describe('AssignmentOverride', () => {
   let testContext;
   beforeEach(() => {
     testContext = {};
-    global.fetch = jest.fn().mockResolvedValue();
+    window.fetch = jest.fn().mockResolvedValue();
 
     testContext.visitor = new Visitor({
       id: 'visitorId',
@@ -75,8 +75,8 @@ describe('AssignmentOverride', () => {
     it('creates an assignment on the test track server', () => {
       testContext.override.persistAssignment();
 
-      expect(global.fetch).toHaveBeenCalledTimes(1);
-      expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/assignment_override', {
+      expect(window.fetch).toHaveBeenCalledTimes(1);
+      expect(window.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/assignment_override', {
         method: 'post',
         mode: 'cors',
         headers: {
@@ -89,7 +89,7 @@ describe('AssignmentOverride', () => {
     });
 
     it('logs an error if the request fails', () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('something went wrong'));
+      window.fetch = jest.fn().mockRejectedValue(new Error('something went wrong'));
 
       expect.assertions(2);
       return testContext.override.persistAssignment().then(() => {
@@ -101,7 +101,7 @@ describe('AssignmentOverride', () => {
     });
 
     it('logs an error if the request returns a non-200', () => {
-      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, body: 'body' });
+      window.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, body: 'body' });
 
       expect.assertions(2);
       return testContext.override.persistAssignment().then(() => {

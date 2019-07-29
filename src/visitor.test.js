@@ -86,7 +86,7 @@ describe('Visitor', () => {
 
   describe('.loadVisitor()', () => {
     beforeEach(() => {
-      global.fetch = jest.fn().mockResolvedValue({
+      window.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: jest.fn().mockReturnValue({
           id: 'server_visitor_id',
@@ -106,7 +106,7 @@ describe('Visitor', () => {
 
       Visitor.loadVisitor(undefined).then(
         function(visitor) {
-          expect(global.fetch).not.toHaveBeenCalled();
+          expect(window.fetch).not.toHaveBeenCalled();
 
           expect(visitor.getId()).toEqual('generated_uuid');
           expect(visitor.getAssignmentRegistry()).toEqual({});
@@ -133,7 +133,7 @@ describe('Visitor', () => {
 
       Visitor.loadVisitor('baked_visitor_id').then(
         function(visitor) {
-          expect(global.fetch).not.toHaveBeenCalled();
+          expect(window.fetch).not.toHaveBeenCalled();
 
           expect(visitor.getId()).toEqual('baked_visitor_id');
           expect(visitor.getAssignmentRegistry()).toEqual({ jabba: jabbaAssignment, wine: wineAssignment });
@@ -145,7 +145,7 @@ describe('Visitor', () => {
     });
 
     it('it loads a visitor from the server for an existing visitor if there are no baked assignments', done => {
-      global.fetch = jest.fn().mockResolvedValue({
+      window.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: jest.fn().mockReturnValue({
           id: 'puppeteer_visitor_id',
@@ -162,7 +162,7 @@ describe('Visitor', () => {
 
       Visitor.loadVisitor('puppeteer_visitor_id').then(
         function(visitor) {
-          expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/puppeteer_visitor_id', {
+          expect(window.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/puppeteer_visitor_id', {
             method: 'get',
             mode: 'cors'
           });
@@ -184,11 +184,11 @@ describe('Visitor', () => {
     });
 
     it('it builds a visitor in offline mode if the request fails', done => {
-      global.fetch = jest.fn().mockRejectedValue();
+      window.fetch = jest.fn().mockRejectedValue();
 
       Visitor.loadVisitor('failed_visitor_id').then(
         function(visitor) {
-          expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/failed_visitor_id', {
+          expect(window.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/visitors/failed_visitor_id', {
             method: 'get',
             mode: 'cors'
           });

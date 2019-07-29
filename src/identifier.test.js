@@ -20,7 +20,7 @@ describe('Identifier', () => {
   let testContext;
   beforeEach(() => {
     testContext = {};
-    global.fetch = jest.fn().mockResolvedValue({
+    window.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: jest.fn().mockReturnValue({
         visitor: {
@@ -76,8 +76,8 @@ describe('Identifier', () => {
   describe('#save()', () => {
     it('hits the test track server with the correct parameters', done => {
       testContext.identifier.save().then(function() {
-        expect(global.fetch).toHaveBeenCalledTimes(1);
-        expect(global.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/identifier', {
+        expect(window.fetch).toHaveBeenCalledTimes(1);
+        expect(window.fetch).toHaveBeenCalledWith('http://testtrack.dev/api/v1/identifier', {
           method: 'post',
           mode: 'cors',
           headers: {

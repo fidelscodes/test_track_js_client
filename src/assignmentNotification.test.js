@@ -18,7 +18,7 @@ describe('AssignmentNotification', () => {
   let testContext;
   beforeEach(() => {
     testContext = {};
-    global.fetch = jest.fn().mockResolvedValue();
+    window.fetch = jest.fn().mockResolvedValue();
 
     testContext.visitor = new Visitor({
       id: 'visitorId',
@@ -72,8 +72,8 @@ describe('AssignmentNotification', () => {
       testContext.analyticsTrackStub.mockResolvedValue(true);
 
       return testContext.notification.send().then(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(2);
-        expect(global.fetch).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
+        expect(window.fetch).toHaveBeenCalledTimes(2);
+        expect(window.fetch).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
           method: 'post',
           mode: 'cors',
           headers: {
@@ -81,7 +81,7 @@ describe('AssignmentNotification', () => {
           },
           body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec"}'
         });
-        expect(global.fetch).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
+        expect(window.fetch).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
           method: 'post',
           mode: 'cors',
           headers: {
@@ -96,8 +96,8 @@ describe('AssignmentNotification', () => {
       testContext.analyticsTrackStub.mockResolvedValue(false);
 
       return testContext.notification.send().then(() => {
-        expect(global.fetch).toHaveBeenCalledTimes(2);
-        expect(global.fetch).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
+        expect(window.fetch).toHaveBeenCalledTimes(2);
+        expect(window.fetch).toHaveBeenNthCalledWith(1, 'http://testtrack.dev/api/v1/assignment_event', {
           method: 'post',
           mode: 'cors',
           headers: {
@@ -105,7 +105,7 @@ describe('AssignmentNotification', () => {
           },
           body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec"}'
         });
-        expect(global.fetch).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
+        expect(window.fetch).toHaveBeenNthCalledWith(2, 'http://testtrack.dev/api/v1/assignment_event', {
           method: 'post',
           mode: 'cors',
           headers: {
@@ -117,7 +117,7 @@ describe('AssignmentNotification', () => {
     });
 
     it('logs an error if the request fails', () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('something went wrong'));
+      window.fetch = jest.fn().mockRejectedValue(new Error('something went wrong'));
 
       expect.assertions(2);
       return testContext.notification.send().then(() => {
@@ -129,7 +129,7 @@ describe('AssignmentNotification', () => {
     });
 
     it('logs an error if the request returns a non-200', () => {
-      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, body: 'body' });
+      window.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, body: 'body' });
 
       expect.assertions(2);
       return testContext.notification.send().then(() => {

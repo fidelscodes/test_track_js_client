@@ -29,44 +29,39 @@ var Visitor = function(options) {
 };
 
 Visitor.loadVisitor = function(visitorId) {
-  var deferred = $.Deferred(),
-    resolve = function(attrs) {
-      deferred.resolve(new Visitor(attrs));
-    };
-
-  if (visitorId) {
-    if (TestTrackConfig.getAssignments()) {
-      resolve({
-        id: visitorId,
-        assignments: TestTrackConfig.getAssignments(),
-        ttOffline: false
-      });
+  return new Promise(function(resolve) {
+    if (visitorId) {
+      if (TestTrackConfig.getAssignments()) {
+        resolve(new Visitor({
+          id: visitorId,
+          assignments: TestTrackConfig.getAssignments(),
+          ttOffline: false
+        }));
+      } else {
+        $.ajax(TestTrackConfig.getUrl() + '/api/v1/visitors/' + visitorId, { method: 'GET', timeout: 5000 })
+          .done(function(attrs) {
+            resolve(new Visitor({
+              id: attrs['id'],
+              assignments: Assignment.fromJsonArray(attrs['assignments']),
+              ttOffline: false
+            }));
+          })
+          .fail(function() {
+            resolve(new Visitor({
+              id: visitorId,
+              assignments: [],
+              ttOffline: true
+            }));
+          });
+      }
     } else {
-      $.ajax(TestTrackConfig.getUrl() + '/api/v1/visitors/' + visitorId, { method: 'GET', timeout: 5000 })
-        .done(function(attrs) {
-          resolve({
-            id: attrs['id'],
-            assignments: Assignment.fromJsonArray(attrs['assignments']),
-            ttOffline: false
-          });
-        })
-        .fail(function() {
-          resolve({
-            id: visitorId,
-            assignments: [],
-            ttOffline: true
-          });
-        });
+      resolve(new Visitor({
+        id: uuid(),
+        assignments: [],
+        ttOffline: false
+      }));
     }
-  } else {
-    resolve({
-      id: uuid(),
-      assignments: [],
-      ttOffline: false
-    });
-  }
-
-  return Promise.resolve(deferred.promise());
+  });
 };
 
 Visitor.prototype.getId = function() {
@@ -167,22 +162,18 @@ Visitor.prototype.logError = function(errorMessage) {
 };
 
 Visitor.prototype.linkIdentifier = function(identifierType, value) {
-  var deferred = $.Deferred(),
-    identifier = new Identifier({
+  var identifier = new Identifier({
       visitorId: this.getId(),
       identifierType: identifierType,
       value: value
     });
 
-  identifier.save().then(
+  return identifier.save().then(
     function(otherVisitor) {
       this._merge(otherVisitor);
       this.notifyUnsyncedAssignments();
-      deferred.resolve();
     }.bind(this)
   );
-
-  return Promise.resolve(deferred.promise());
 };
 
 Visitor.prototype.setAnalytics = function(analytics) {

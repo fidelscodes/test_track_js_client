@@ -18,9 +18,7 @@ var Identifier = function(options) {
 };
 
 Identifier.prototype.save = function() {
-  var deferred = $.Deferred();
-
-  $.ajax(TestTrackConfig.getUrl() + '/api/v1/identifier', {
+  var promise = $.ajax(TestTrackConfig.getUrl() + '/api/v1/identifier', {
     method: 'POST',
     dataType: 'json',
     crossDomain: true,
@@ -34,10 +32,10 @@ Identifier.prototype.save = function() {
       id: identifierJson.visitor.id,
       assignments: Assignment.fromJsonArray(identifierJson.visitor.assignments)
     });
-    deferred.resolve(visitor);
+    return visitor;
   });
 
-  return Promise.resolve(deferred.promise());
+  return Promise.resolve(promise);
 };
 
 export default Identifier;

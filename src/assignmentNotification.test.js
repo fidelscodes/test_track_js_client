@@ -77,7 +77,7 @@ describe('AssignmentNotification', () => {
           method: 'post',
           mode: 'cors',
           headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
           },
           body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec"}'
         });
@@ -85,7 +85,7 @@ describe('AssignmentNotification', () => {
           method: 'post',
           mode: 'cors',
           headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
           },
           body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec","mixpanel_result":"success"}'
         });
@@ -101,7 +101,7 @@ describe('AssignmentNotification', () => {
           method: 'post',
           mode: 'cors',
           headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
           },
           body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec"}'
         });
@@ -109,7 +109,7 @@ describe('AssignmentNotification', () => {
           method: 'post',
           mode: 'cors',
           headers: {
-            "Content-Type": "application/json"
+            'Content-Type': 'application/json'
           },
           body: '{"visitor_id":"visitorId","split_name":"jabba","context":"spec","mixpanel_result":"failure"}'
         });
@@ -117,7 +117,7 @@ describe('AssignmentNotification', () => {
     });
 
     it('logs an error if the request fails', () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error("something went wrong"));
+      global.fetch = jest.fn().mockRejectedValue(new Error('something went wrong'));
 
       expect.assertions(2);
       return testContext.notification.send().then(() => {

@@ -81,7 +81,8 @@ describe('Identifier', () => {
           method: 'post',
           mode: 'cors',
           headers: {
-            "Content-Type": "application/json"          },
+            'Content-Type': 'application/json'
+          },
           body: '{"identifier_type":"myappdb_user_id","value":444,"visitor_id":"transient_visitor_id"}'
         });
 

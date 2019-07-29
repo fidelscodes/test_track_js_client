@@ -603,11 +603,13 @@ describe('Visitor', () => {
       testContext.jabbaCGIAssignment = new Assignment({ splitName: 'jabba', variant: 'cgi', isUnsynced: false });
       testContext.blueButtonAssignment = new Assignment({ splitName: 'blue_button', variant: true, isUnsynced: true });
 
-      mockSave.mockResolvedValue(new Visitor({
+      mockSave.mockResolvedValue(
+        new Visitor({
           id: 'actual_visitor_id',
           assignments: [testContext.jabbaCGIAssignment, testContext.blueButtonAssignment]
-        }));
-      });
+        })
+      );
+    });
 
     it('saves an identifier', () => {
       testContext.visitor.linkIdentifier('myappdb_user_id', 444);

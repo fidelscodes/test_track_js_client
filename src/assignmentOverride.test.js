@@ -80,15 +80,16 @@ describe('AssignmentOverride', () => {
         method: 'post',
         mode: 'cors',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: "Basic dGhlX3VzZXJuYW1lOnRoZV9wYXNzd29yZA==",
+          'Content-Type': 'application/json',
+          Authorization: 'Basic dGhlX3VzZXJuYW1lOnRoZV9wYXNzd29yZA=='
         },
-        body: '{"visitor_id":"visitorId","split_name":"jabba","variant":"cgi","context":"spec","mixpanel_result":"success"}'
+        body:
+          '{"visitor_id":"visitorId","split_name":"jabba","variant":"cgi","context":"spec","mixpanel_result":"success"}'
       });
     });
 
     it('logs an error if the request fails', () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error("something went wrong"));
+      global.fetch = jest.fn().mockRejectedValue(new Error('something went wrong'));
 
       expect.assertions(2);
       return testContext.override.persistAssignment().then(() => {

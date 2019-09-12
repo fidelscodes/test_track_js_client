@@ -17,7 +17,7 @@ var ABConfiguration = (function() { // jshint ignore:line
     _ABConfiguration.prototype.getVariants = function() {
         var splitVariants = this._getSplitVariants();
         if (splitVariants && splitVariants.length > 2) {
-            this._visitor.logError('A/B for ' + this._splitName + ' configures split with more than 2 variants');
+            this._visitor.logError('A/B for ' + this._splitName + ' configures split with more than 2 variants: ' + splitVariants);
         }
 
         return {

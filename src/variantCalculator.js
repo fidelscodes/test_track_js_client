@@ -29,7 +29,7 @@ var VariantCalculator = (function() { // jshint ignore:line
             }
         }
 
-        throw new Error('Assignment bucket out of range. ' + assignmentBucket + ' unmatched in ' + this.splitName + ': ' + JSON.stringify(weighting));
+        throw new Error('Assignment bucket out of range. ' + assignmentBucket + ' unmatched in ' + this.splitName + ': ' + JSON.stringify(weighting) + '. Sorted variants: ' + sortedVariants + '. Bucket ceiling: ' + bucketCeiling);
     };
 
     _VariantCalculator.prototype.getSplitVisitorHash = function() {

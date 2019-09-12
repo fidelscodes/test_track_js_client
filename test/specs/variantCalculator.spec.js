@@ -175,7 +175,7 @@ describe('VariantCalculator', function() {
 
             expect(function() {
                 calculator.getVariant();
-            }).to.throw('Assignment bucket out of range. 99 unmatched in invalidWeighting: {"yes":33,"no":33,"maybe":33}');
+            }).to.throw('Assignment bucket out of range. 99 unmatched in invalidWeighting: {"yes":33,"no":33,"maybe":33}. Sorted variants: maybe,no,yes. Bucket ceiling: 99');
         });
     });
 });

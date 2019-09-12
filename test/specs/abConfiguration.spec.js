@@ -67,7 +67,7 @@ describe('ABConfiguration', function() {
 
             abConfiguration.getVariants();
 
-            expect(this.logErrorStub).to.be.calledWithExactly('A/B for element configures split with more than 2 variants');
+            expect(this.logErrorStub).to.be.calledWithExactly('A/B for element configures split with more than 2 variants: earth,wind,fire,water');
         });
 
         it('does not log an error if the split registry is unavailable', function() {

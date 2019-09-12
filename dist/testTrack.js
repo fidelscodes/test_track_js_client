@@ -247,7 +247,7 @@
                 }
             }
     
-            throw new Error('Assignment bucket out of range. ' + assignmentBucket + ' unmatched in ' + this.splitName + ': ' + JSON.stringify(weighting));
+            throw new Error('Assignment bucket out of range. ' + assignmentBucket + ' unmatched in ' + this.splitName + ': ' + JSON.stringify(weighting) + '. Sorted variants: ' + sortedVariants + '. Bucket ceiling: ' + bucketCeiling);
         };
     
         _VariantCalculator.prototype.getSplitVisitorHash = function() {
@@ -993,7 +993,7 @@
         _ABConfiguration.prototype.getVariants = function() {
             var splitVariants = this._getSplitVariants();
             if (splitVariants && splitVariants.length > 2) {
-                this._visitor.logError('A/B for ' + this._splitName + ' configures split with more than 2 variants');
+                this._visitor.logError('A/B for ' + this._splitName + ' configures split with more than 2 variants: ' + splitVariants);
             }
     
             return {
